@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Disfruta del clásico Sudoku con niveles desafiantes, ayuda visual, y una interfaz rápida y simple. Ideal para entrenar la mente y mejorar la concentración."
+    />
+    <meta name="author" content="Gimenez Mathias Agustin" />
+    <meta
+      name="keywords"
+      content="Sudoku, Juego, Desafiante, Entretenimiento, Sudoku Clásico, Juegos de Lógica"
+    />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph para redes sociales -->
+    <meta property="og:title" content="Sudoku - Juego Clásico y Desafiante" />
+    <meta
+      property="og:description"
+      content="Disfruta del clásico Sudoku con niveles desafiantes, ayuda visual, y una interfaz rápida y simple."
+    />
+    <meta property="og:type" content="website" />
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="./imgs/logo.png" type="image/x-icon" />
+
+    <!-- Iconos FontAwesome -->
+    <script
+      src="https://kit.fontawesome.com/fce430d171.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Sudoku</title>
+  </head>
+  <body>
+    <header>
+      <h1>SUDOKU</h1>
+      <input
+        type="checkbox"
+        id="darkmode-toggle"
+        aria-label="Alternar modo oscuro"
+      />
+      <label for="darkmode-toggle" id="mode"></label>
+    </header>
+
+    <main class="main">
+      <div
+        class="modal"
+        id="modal-error"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="error-title"
+        style="display: none"
+      >
+        <div class="modal-content">
+          <h2 id="error-title">¡ATENCION!</h2>
+          <p id="error-message-text">
+            Has superado el maximo numero de errores.
+          </p>
+          <button id="btn-error-restart" class="btn-option">
+            REINICIAR PARTIDA
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="modal"
+        id="modal-finish-game"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="finish-title"
+        style="display: none"
+      >
+        <div class="modal-content">
+          <h2 id="finish-title">¡FELICITACIONES!</h2>
+          <p id="finish-details"></p>
+          <button id="btn-new-game-finish" class="btn-option">
+            NUEVA PARTIDA
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="modal"
+        id="modal-welcome"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="welcome-title"
+        style="display: none"
+      >
+        <div class="modal-content">
+          <p>Ya tenes una partida guardada</p>
+          <div class="options-menu">
+            <button id="btn-continue-game" class="btn-option">
+              SEGUIR JUGANDO
+            </button>
+            <button id="btn-new-game" class="btn-option">NUEVA PARTIDA</button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="modal"
+        id="modal-new-game"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        style="display: none"
+      >
+        <div class="modal-content">
+          <button
+            class="close-modal"
+            id="close-modal"
+            aria-label="Cerrar ventana"
+          >
+            &times;
+          </button>
+          <h2 id="modal-title">OPCIONES DE JUEGO</h2>
+          <div class="difficulty-options">
+            <button class="btn-difficulty" data-difficulty="facil">
+              FACIL
+            </button>
+            <button class="btn-difficulty" data-difficulty="intermedio">
+              INTERMEDIO
+            </button>
+            <button class="btn-difficulty" data-difficulty="dificil">
+              DIFICIL
+            </button>
+          </div>
+          <div class="options-menu">
+            <button id="btn-restart" class="btn-option">REINICIAR</button>
+            <button id="btn-return-game" class="btn-option">VOLVER</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="game-left">
+        <div class="game">
+          <p>DIFICULTAD: <b id="difficulty">FACIL</b></p>
+          <p>TIEMPO: <b id="time">00:00</b></p>
+          <p>PUNTUACION: <b id="points">3000</b></p>
+          <p>ERRORES: <b id="errors"></b></p>
+        </div>
+        <div class="board"></div>
+        <p class="best-score">PUNTAJE MAS ALTO: <b id="best-score">0</b></p>
+      </section>
+
+      <aside class="game-right">
+        <div class="options">
+          <div>
+            <button id="btn-delete" aria-label="Borrar">
+              <i class="fa-solid fa-eraser"></i>
+            </button>
+            <p>BORRAR</p>
+          </div>
+          <div>
+            <button id="btn-pause" aria-label="Pausar juego">
+              <i class="fa-solid fa-pause"></i>
+            </button>
+            <button id="btn-play" class="hide" aria-label="Reanudar juego">
+              <i class="fa-solid fa-play"></i>
+            </button>
+            <p id="text-time">PAUSAR</p>
+          </div>
+          <!-- <div class="note">
+          <button id="btn-note" aria-label="Nota">
+            <i class="fa-solid fa-pencil"></i>
+          </button>
+          <p id="text-note">NOTA</p>
+        </div> -->
+        </div>
+
+        <div class="numbers" role="group" aria-label="Números para ingresar">
+          <div class="row">
+            <button class="col" type="button">1</button>
+            <button class="col" type="button">2</button>
+            <button class="col" type="button">3</button>
+          </div>
+          <div class="row">
+            <button class="col" type="button">4</button>
+            <button class="col" type="button">5</button>
+            <button class="col" type="button">6</button>
+          </div>
+          <div class="row">
+            <button class="col" type="button">7</button>
+            <button class="col" type="button">8</button>
+            <button class="col" type="button">9</button>
+          </div>
+        </div>
+
+        <div
+          class="new-game"
+          role="button"
+          tabindex="0"
+          aria-label="Nueva partida"
+        >
+          <p>NUEVA PARTIDA</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <div class="footer-left">
+        <span class="name">Mathi.dev</span>
+        <span class="copyright">Copyright @2025</span>
+      </div>
+      <div class="footer-right">
+        <a href="https://www.linkedin.com/in/gimenez-mathias" target="_blank">
+          <i class="fa-brands fa-linkedin-in" aria-label="LinkedIn"></i>
+        </a>
+        <a href="https://github.com/mathiasgimenez" target="_blank">
+          <i class="fa-brands fa-github" aria-label="GitHub"></i>
+        </a>
+      </div>
+    </footer>
+
+    <script type="module" src="/scripts/script.js"></script>
+  </body>
+</html>
