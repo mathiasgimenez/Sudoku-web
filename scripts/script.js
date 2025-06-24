@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hideBoard();
 
     if ($btnReturnGame) $btnReturnGame.style.display = "none";
-    if ($btnCloseModal) $btnCloseModal.style.display = "none"; // SOLO aquí
+    if ($btnCloseModal) $btnCloseModal.style.display = "none";
 
     const time = $displayTime.textContent;
     const score = $points.textContent;
@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $selectCell(
       (cell) => {
         selectedCell = cell;
-        marcarSeleccionYCoincidencias(cell); // <-- Agregado aquí
+        marcarSeleccionYCoincidencias(cell); 
       },
       () => interactionEnabled
     );
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showBoard();
     updateTimeState();
     if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
-    if ($btnReturnGame) $btnReturnGame.style.display = ""; // SE VUELVE A MOSTRAR
+    if ($btnReturnGame) $btnReturnGame.style.display = ""; 
   }
 
   const $difficultyDisplay = $id("difficulty");
@@ -252,7 +252,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateTimeState();
 
-  // SOLO UNA VEZ: listeners que siempre usan la matriz actual
   $addNumber(
     () => selectedCell,
     () => matrixCopy,
@@ -375,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $btnNewGameTrigger.addEventListener("click", () => {
     resetNewGameModal();
-    // Solo mostrar los botones si el modal de finish NO está visible
+
     if ($modalFinishGame.style.display !== "flex") {
       if ($btnReturnGame) $btnReturnGame.style.display = "";
       if ($btnCloseModal) $btnCloseModal.style.display = "";
@@ -400,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $btnNewGameFinish.addEventListener("click", () => {
     $modalFinishGame.style.display = "none";
     resetNewGameModal();
-    // NO mostrar los botones aquí, se mostrarán cuando el usuario cierre el modal de nueva partida
+
     activeModal($modalNewGame);
   });
 
@@ -446,7 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function marcarSeleccionYCoincidencias(cell) {
     if (!cell) return;
-    // Limpiar selección anterior
+    // Limpiar seleccion anterior
     clearSelection();
 
     const row = parseInt(cell.dataset.row);
