@@ -16,6 +16,7 @@ import {
   hideBoard,
   validateSudokuMatrix,
   isSudokuCompleteAndValid,
+  countSudokuSolutions,
 } from "./library.js";
 import themeMode from "./theme-mode.js";
 
@@ -27,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let matrix,
     matrixCopy,
+    matrixOriginal,
     errorCounter = 0,
     currentDifficulty = "facil";
   const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -143,14 +145,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function createAndSelectBoard(matrixCopy) {
     $board.innerHTML = "";
-    $createBoard(matrixCopy, $board);
+    $createBoard(matrixCopy, $board, matrixOriginal);
     $selectCell(
       (cell) => {
         selectedCell = cell;
-        marcarSeleccionYCoincidencias(cell); 
+        marcarSeleccionYCoincidencias(cell);
       },
       () => interactionEnabled
     );
+    setTimeout(updateNumberButtons, 0);
   }
 
   function activeModal($modal) {
@@ -172,7 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
     showBoard();
     updateTimeState();
     if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
-    if ($btnReturnGame) $btnReturnGame.style.display = ""; 
+    if ($btnReturnGame) $btnReturnGame.style.display = "";
+    updateNumberButtons();
   }
 
   const $difficultyDisplay = $id("difficulty");
@@ -187,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $points.textContent = initPts;
     savedTime = savedGame.time;
     matrixCopy = savedGame.matrix;
+    matrixOriginal = savedGame.matrixOriginal;
     matrix = copyMatrix(matrixCopy);
     errorCounter = savedGame.errors != null ? savedGame.errors : 0;
     if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
@@ -200,9 +205,9 @@ document.addEventListener("DOMContentLoaded", () => {
     activeModal($modalWelcome);
   } else {
     matrix = createSudokuMatrix();
-    fillMatrix(matrix, numbers, 0);
+    fillMatrix(matrix, numbers, "");
     matrixCopy = copyMatrix(matrix);
-    hideNumbers(matrixCopy, "", currentDifficulty, 0);
+    hideNumbers(matrixCopy, "", currentDifficulty, "");
     $points.textContent = getInitialScore();
     createAndSelectBoard(matrixCopy);
     updateDisplayTime(0);
@@ -214,6 +219,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if ($btnReturnGame) $btnReturnGame.style.display = "none";
   }
 
+  // Funciones para manejar el tiempo
+  // Convierte un string de tiempo en segundos
+  // Formato esperado: "mm:ss" o "hh:mm:ss"
   function timeStringToSeconds(timeString) {
     const parts = timeString.split(":").map(Number);
     if (parts.length === 2) return parts[0] * 60 + parts[1];
@@ -221,6 +229,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return 0;
   }
 
+  // Actualiza el tiempo mostrado en el display
+  // totalSeconds: segundos totales a mostrar
+  // Formato: "hh:mm:ss" o "mm:ss"
+  // Si hay horas, muestra "hh:mm:ss", si no, muestra "mm:ss
   function updateDisplayTime(totalSeconds) {
     let hours = Math.floor(totalSeconds / 3600);
     let minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -238,6 +250,8 @@ document.addEventListener("DOMContentLoaded", () => {
     $displayTime.textContent = formattedTime;
   }
 
+  // Actualiza el estado de los botones de tiempo
+  // Si timerState es false, muestra el boton de play y oculta el de pause
   function updateTimeState() {
     if (timerState === false) {
       $btnPause.classList.add("hide");
@@ -252,17 +266,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateTimeState();
 
+  // Eventos para agregar numeros a las celdas
+  // Usa $addNumber para agregar numeros a las celdas
   $addNumber(
     () => selectedCell,
     () => matrixCopy,
-    (row, col, number, isValid) => {
+    (row, col, number, cell) => {
+      let isValid =
+        number !== "" && Number(number) === Number(matrixOriginal[row][col]);
       if (isValid) {
+        cell.textContent = number;
+        cell.dataset.numberValidation = "true";
+        cell.classList.remove("invalid-cell");
+        cell.setAttribute("data-locked", "true"); // Bloquea la celda
+        matrixCopy[row][col] = number;
         updateScoreOnCorrect();
         if (isSudokuCompleteAndValid(matrixCopy)) {
           deleteGame();
           showFinishModal();
         }
-      } else {
+      } else if (number !== "") {
+        cell.textContent = number;
+        cell.classList.add("invalid-cell");
+        cell.removeAttribute("data-number-validation");
+        cell.removeAttribute("data-locked");
+        matrixCopy[row][col] = "";
         errorCounter++;
         if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
         updateScoreOnError();
@@ -271,20 +299,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       reselectCell();
+      updateNumberButtons();
     }
   );
 
+  // Permite agregar numeros a las celdas usando el teclado
+  // Usa $addNumberKeyboard para agregar numeros a las celdas
+  // Permite agregar numeros a las celdas usando el teclado
   $addNumberKeyboard(
     () => selectedCell,
     () => matrixCopy,
-    (row, col, number, isValid) => {
+    (row, col, number, cell) => {
+      let isValid =
+        number !== "" && Number(number) === Number(matrixOriginal[row][col]);
       if (isValid) {
+        cell.textContent = number;
+        cell.dataset.numberValidation = "true";
+        cell.classList.remove("invalid-cell");
+        cell.setAttribute("data-locked", "true");
+        matrixCopy[row][col] = number;
         updateScoreOnCorrect();
         if (isSudokuCompleteAndValid(matrixCopy)) {
           deleteGame();
           showFinishModal();
         }
-      } else {
+      } else if (number !== "") {
+        cell.textContent = number;
+        cell.classList.add("invalid-cell");
+        cell.removeAttribute("data-number-validation");
+        cell.removeAttribute("data-locked");
+        matrixCopy[row][col] = "";
         errorCounter++;
         if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
         updateScoreOnError();
@@ -293,9 +337,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       reselectCell();
+      updateNumberButtons();
     }
   );
 
+  // boton de pausa
+  // Pausa el juego y oculta el tablero y la seleccion
   $btnPause.addEventListener("click", () => {
     timerState = false;
     if (timer) timer.pause();
@@ -305,6 +352,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTimeState();
   });
 
+  // boton de play
+  // Reanuda el juego si estaba pausado
   $btnPlay.addEventListener("click", () => {
     timerState = true;
     if (timer) timer.start();
@@ -313,6 +362,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTimeState();
   });
 
+  // Evento para manejar la visibilidad del documento
+  // Si el documento se oculta, pausa el timer y oculta el tablero
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
       timerState = false;
@@ -329,20 +380,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!interactionEnabled) return;
     const cell = selectedCell;
     if (!cell) return;
-    if (cell.classList.contains("invalid-cell")) {
-      const r = parseInt(cell.dataset.row) - 1;
-      const c = parseInt(cell.dataset.col) - 1;
-      cell.textContent = "";
-      cell.classList.remove("invalid-cell");
-      matrixCopy[r][c] = "";
-    }
+    // NO permite borrar si la celda esta bloqueada (original o valida)
+    if (cell.getAttribute("data-locked") === "true") return;
+    // Solo permite borrar si la celda es invalida (tiene la clase invalid-cell)
+    if (!cell.classList.contains("invalid-cell")) return;
+    const r = parseInt(cell.dataset.row) - 1;
+    const c = parseInt(cell.dataset.col) - 1;
+    cell.textContent = "";
+    cell.classList.remove("invalid-cell");
+    cell.removeAttribute("data-number-validation");
+    cell.removeAttribute("data-locked");
+    matrixCopy[r][c] = "";
+    updateNumberButtons();
   });
 
+  // Guardado periodico
   setInterval(() => {
     const currentPoints = $points.textContent;
     const currentTime = $displayTime.textContent;
     saveGame(
       matrixCopy,
+      matrixOriginal,
       currentDifficulty,
       currentTime,
       currentPoints,
@@ -353,9 +411,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function startNewGame(difficulty) {
     currentDifficulty = difficulty;
     matrix = createSudokuMatrix();
-    fillMatrix(matrix, numbers, 0);
+    fillMatrix(matrix, numbers, "");
+    matrixOriginal = copyMatrix(matrix);
     matrixCopy = copyMatrix(matrix);
-    hideNumbers(matrixCopy, "", difficulty, 0);
+    hideNumbers(matrixCopy, "", difficulty, "");
     errorCounter = 0;
     if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
     $points.textContent = getInitialScore();
@@ -437,6 +496,14 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTimeState();
     disableModal($modalWelcome);
     if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
+    updateNumberButtons();
+  });
+
+  $btnErrorRestart.addEventListener("click", () => {
+    errorCounter = 0;
+    if ($errors) $errors.textContent = `${errorCounter}/${maxErrors}`;
+    startNewGame(currentDifficulty);
+    $modalError.style.display = "none";
   });
 
   function reselectCell() {
@@ -482,4 +549,24 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
+
+  // Funcion para actualizar el estado de los botones de numeros
+  function updateNumberButtons() {
+    const $numberButtons = document.querySelectorAll(".numbers .col");
+    const counts = Array(10).fill(0);
+    document.querySelectorAll(".sudoku-board .col").forEach((cell) => {
+      const val = parseInt(cell.textContent);
+      // Solo cuenta si la celda esta bloqueada (es valida)
+      if (val >= 1 && val <= 9 && cell.getAttribute("data-locked") === "true") {
+        counts[val]++;
+      }
+    });
+    // Deshabilitar los botones que ya tienen 9 validos en el tablero
+    $numberButtons.forEach((btn) => {
+      const num = parseInt(btn.textContent);
+      btn.disabled = counts[num] >= 9;
+    });
+  }
+
+  updateNumberButtons();
 });

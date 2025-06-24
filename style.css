@@ -74,6 +74,7 @@ button {
   border: none;
 }
 
+
 #mode {
   width: 4.5em;
   height: 2em;
@@ -569,4 +570,9 @@ footer {
 
 #modal-error button{
   padding: 10px;
+}
+
+button:disabled {
+  cursor: default  !important;
+  opacity: 0.5 !important;
 }
